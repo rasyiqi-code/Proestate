@@ -1,28 +1,33 @@
 
 import React from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import About from './components/About';
-import Services from './components/Services';
-import DigitalPlatform from './components/DigitalPlatform';
-import Team from './components/Team';
-import Contact from './components/Contact';
-import Footer from './components/Footer';
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import LandingPage from './components/LandingPage';
+import Login from './components/Login';
+import Dashboard from './pages/Dashboard';
+import { AuthProvider } from './auth/AuthContext';
+import ProtectedRoute from './auth/ProtectedRoute';
+import { SiteContentProvider } from './context/SiteContentContext';
 
 const App: React.FC = () => {
   return (
-    <div className="bg-white text-gray-800 font-sans">
-      <Header />
-      <main>
-        <Hero />
-        <About />
-        <Services />
-        <DigitalPlatform />
-        <Team />
-        <Contact />
-      </main>
-      <Footer />
-    </div>
+    <AuthProvider>
+      <SiteContentProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </BrowserRouter>
+      </SiteContentProvider>
+    </AuthProvider>
   );
 };
 
