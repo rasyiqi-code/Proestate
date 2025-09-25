@@ -1,33 +1,30 @@
 
 import React, { useRef, useState, useEffect } from 'react';
-import { EnvelopeIcon, UserCircleIcon, AcademicCapIcon, UserGroupIcon, BuildingOfficeIcon } from './Icons';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { db } from '../firebase';
+import { EnvelopeIcon, UserCircleIcon } from './Icons';
 
 interface TeamMember {
-  icon: React.ReactNode;
+  id: string;
+  imageUrl?: string;
   name: string;
   title: string;
   company: string;
   description: string;
   email: string;
+  category: 'executive' | 'management';
 }
 
-const executiveTeam: TeamMember[] = [
-  { icon: <BuildingOfficeIcon className="w-8 h-8" />, name: 'Zaen Afton', title: 'Founder & Marketing Lead', company: 'PT. Retas Lintas Batas', description: 'Visionary entrepreneur with expertise in digital marketing and web development solutions.', email: 'zaen@proestate.id' },
-  { icon: <UserCircleIcon className="w-8 h-8" />, name: 'Achmad Rifkha Yusuf', title: 'Founder', company: 'A.R.Y Property', description: 'Property industry leader with legal expertise and Sufi literature author.', email: 'achmad@proestate.id' },
-  { icon: <UserCircleIcon className="w-8 h-8" />, name: 'Reni Munggarani', title: 'Chief Executive Officer', company: 'Pro Estate', description: 'Versatile CEO with expertise in business leadership, translation, and literature.', email: 'reni@proestate.id' },
-  { icon: <AcademicCapIcon className="w-8 h-8" />, name: 'Syabrina Rahma Ayu', title: 'Director', company: 'Pro Estate', description: 'Dynamic pharmacy student and organizational leader with entrepreneurial vision.', email: 'syabrina@proestate.id' },
-];
-
-const managementTeam: TeamMember[] = [
-  { icon: <UserGroupIcon className="w-8 h-8" />, name: 'Nana Nurhana', title: 'General Manager', company: 'Pro Estate', description: 'Operations excellence and strategic management expertise.', email: 'nana@proestate.id' }
-];
-
-const TeamMemberCard: React.FC<TeamMember> = ({ icon, name, title, company, description, email }) => (
-  <div className="bg-white p-6 rounded-xl border border-gray-200/80 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col">
+const TeamMemberCard: React.FC<Omit<TeamMember, 'id' | 'category'>> = ({ imageUrl, name, title, company, description, email }) => (
+  <div className="bg-white p-6 rounded-xl border border-gray-200/80 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col h-full">
     <div className="flex items-center space-x-4 mb-4">
-      <div className="bg-pro-blue text-white w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0">
-        {icon}
-      </div>
+      {imageUrl ? (
+        <img src={imageUrl} alt={name} className="w-14 h-14 rounded-lg object-cover flex-shrink-0" />
+      ) : (
+        <div className="bg-pro-blue text-white w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0">
+          <UserCircleIcon className="w-8 h-8" />
+        </div>
+      )}
       <div>
         <h4 className="font-bold text-lg text-pro-dark-blue">{name}</h4>
         <p className="text-sm text-gray-500">{title}</p>
@@ -35,7 +32,7 @@ const TeamMemberCard: React.FC<TeamMember> = ({ icon, name, title, company, desc
       </div>
     </div>
     <p className="text-gray-600 text-sm mb-4 flex-grow">{description}</p>
-    <a href={`mailto:${email}`} className="flex items-center space-x-2 text-pro-blue hover:underline text-sm font-medium">
+    <a href={`mailto:${email}`} className="flex items-center space-x-2 text-pro-blue hover:underline text-sm font-medium mt-auto">
       <EnvelopeIcon className="w-4 h-4" />
       <span>Contact</span>
     </a>
@@ -45,7 +42,30 @@ const TeamMemberCard: React.FC<TeamMember> = ({ icon, name, title, company, desc
 const Team: React.FC = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    const fetchTeamMembers = async () => {
+      try {
+        const teamCollection = collection(db, 'teamMembers');
+        const q = query(teamCollection, orderBy('order', 'asc'));
+        const teamSnapshot = await getDocs(q);
+        const teamList = teamSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as TeamMember));
+        setTeamMembers(teamList);
+      } catch (error) {
+        console.error("Error fetching team members: ", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTeamMembers();
+  }, []);
+  
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -68,6 +88,9 @@ const Team: React.FC = () => {
       }
     };
   }, []);
+
+  const executiveTeam = teamMembers.filter(member => member.category === 'executive');
+  const managementTeam = teamMembers.filter(member => member.category === 'management');
 
   return (
     <section 
@@ -103,18 +126,29 @@ const Team: React.FC = () => {
             </div>
           </div>
         </div>
+        {loading ? (
+          <div className="text-center text-gray-500">Loading Team...</div>
+        ) : (
+          <div>
+            {executiveTeam.length > 0 && (
+              <>
+                <h3 className="text-2xl font-semibold text-center text-pro-dark-blue mb-8">Executive Leadership</h3>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+                  {executiveTeam.map((member) => <TeamMemberCard key={member.id} {...member} />)}
+                </div>
+              </>
+            )}
 
-        <div>
-          <h3 className="text-2xl font-semibold text-center text-pro-dark-blue mb-8">Executive Leadership</h3>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            {executiveTeam.map((member, index) => <TeamMemberCard key={index} {...member} />)}
+            {managementTeam.length > 0 && (
+              <>
+                <h3 className="text-2xl font-semibold text-center text-pro-dark-blue mb-8">Management Team</h3>
+                <div className="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                  {managementTeam.map((member) => <TeamMemberCard key={member.id} {...member} />)}
+                </div>
+              </>
+            )}
           </div>
-
-          <h3 className="text-2xl font-semibold text-center text-pro-dark-blue mb-8">Management Team</h3>
-          <div className="max-w-md mx-auto">
-             {managementTeam.map((member, index) => <TeamMemberCard key={index} {...member} />)}
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );

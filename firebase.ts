@@ -1,23 +1,20 @@
-// FIX: Import firebase from compat libraries to use it as a module, as `window.firebase` is not available in a modular setup.
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-// IMPORTANT: Replace the placeholder values below with your own Firebase project's configuration.
-// You can find this in your Firebase project settings.
+// Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDfYCx89f6YLr9m3ZzXCSZ-c_tsJncN5R8",
+  authDomain: "proestate-504a1.firebaseapp.com",
+  projectId: "proestate-504a1",
+  storageBucket: "proestate-504a1.firebasestorage.app",
+  messagingSenderId: "281478313891",
+  appId: "1:281478313891:web:ccaab8da93b6b276b68c16",
+  measurementId: "G-TBT2HJ046D"
 };
 
 // Initialize Firebase
-// FIX: Replace `window.firebase` with the imported `firebase` module to resolve errors on lines 13 and 14.
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
+const app = initializeApp(firebaseConfig);
 
-// FIX: Replace `window.firebase` with the imported `firebase` module to resolve error on line 17.
-export const auth = firebase.auth();
+// Initialize Cloud Firestore and get a reference to the service
+export const db = getFirestore(app);

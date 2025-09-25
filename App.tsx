@@ -1,29 +1,25 @@
+
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import Hero from './components/Hero';
+import About from './components/About';
+import Services from './components/Services';
+import DigitalPlatform from './components/DigitalPlatform';
+import Team from './components/Team';
+import Contact from './components/Contact';
 import Footer from './components/Footer';
-import LandingPage from './components/LandingPage';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import ProtectedRoute from './auth/ProtectedRoute';
 
 const App: React.FC = () => {
   return (
-    <div className="bg-white text-gray-800 font-sans flex flex-col min-h-screen">
+    <div className="bg-white text-gray-800 font-sans">
       <Header />
-      <main className="flex-grow">
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            } 
-          />
-        </Routes>
+      <main>
+        <Hero />
+        <About />
+        <Services />
+        <DigitalPlatform />
+        <Team />
+        <Contact />
       </main>
       <Footer />
     </div>
